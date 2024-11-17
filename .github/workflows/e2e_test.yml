@@ -1,8 +1,7 @@
-
 name: Nightly E2E Test Suite
 on:
   schedule:
-    - cron: "*/5 * * * *"
+    - cron: "30 20 * * *"  # Runs at 20:30 UTC (22:30 Israel time)
   workflow_dispatch:
 
 jobs:
