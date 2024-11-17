@@ -35,7 +35,7 @@ def test_shopping_flow(setup_playwright):
     print("Clicked 'Sign in' button.")
 
     # Wait for login to complete
-    page.wait_for_timeout(5000)
+    page.wait_for_timeout(2000)
 
     # Verify we are on a new page after login
     assert page.url != "https://main.d2t1pk7fjag8u6.amplifyapp.com", "Login was not successful; still on the login page."
@@ -68,24 +68,31 @@ def test_shopping_flow(setup_playwright):
     print("Filled in the shipping address.")
     page.wait_for_timeout(2000)
 
-    # Click the Complete Checkout button
+    # Step 5: Click the Complete Checkout button and handle the popup message
+    def handle_dialog(dialog):
+        global alert_message
+        alert_message = dialog.message
+        dialog.accept()
+
+    # Set up the listener for the dialog event
+    page.on("dialog", handle_dialog)
+
     # Step 4: Click the Complete Checkout button and capture the popup message
     page.click("text=Complete Checkout")
     page.wait_for_timeout(2000)
 
-    # Handle the alert dialog and capture the message
-    alert_text = page.on("dialog", lambda dialog: dialog.accept() or dialog.message)
-    print(f"Captured alert message: {alert_text}")
+    # Check if the alert message was captured correctly
+    try:
+        order_id = alert_message.split(": ")[1].strip()
+        print(f"Captured order ID: {order_id}")
+    except NameError:
+        raise Exception("No alert message captured")
 
-    # Extract the order ID from the alert message using string manipulation or regex
-    order_id = alert_text.split(": ")[1].strip()
-    print(f"Captured order ID: {order_id}")
-
-    # Navigate to the Orders page
+    # Step 6: Navigate to the Orders page
     page.click("text=Orders")
     page.wait_for_timeout(2000)
 
-    # Verify the order appears in the orders list using the captured order ID
+    # Step 7: Verify the order appears in the orders list using the captured order ID
     assert page.is_visible(f"text=Order {order_id}"), "New order not found in orders list"
     print("Order verified successfully!")
 
