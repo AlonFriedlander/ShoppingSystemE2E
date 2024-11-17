@@ -4,6 +4,7 @@ on:
   schedule:
     # Adjust according to Israel time (10:00 PM Israel time during standard time)
     - cron: '0 20 * * *'
+  workflow_dispatch:
 
 jobs:
   e2e-test:
@@ -28,4 +29,7 @@ jobs:
 
       # Step 4: Run the test script
       - name: Run e2e tests
+        env:
+          EMAIL: ${{ secrets.EMAIL }}
+          PASSWORD: ${{ secrets.PASSWORD }}
         run: pytest tests/test_shopping_flow.py
