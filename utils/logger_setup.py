@@ -1,5 +1,3 @@
-# utils/logger_setup.py
-
 import logging
 import os
 from datetime import datetime
