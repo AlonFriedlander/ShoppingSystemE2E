@@ -9,12 +9,9 @@ from dotenv import load_dotenv, find_dotenv  # Import the module to load .env
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from utils.logger_setup import logger
 
-# Load environment variables from .env file
+# Load environment variables from .env if it exists
 dotenv_path = find_dotenv()
-if dotenv_path == "":
-    logger.error("No .env file found. Please ensure the .env file is present.")
-    raise FileNotFoundError("No .env file found. Please ensure the .env file is present.")
-else:
+if dotenv_path:
     load_dotenv(dotenv_path)
 
 # Get email and password from environment variables
