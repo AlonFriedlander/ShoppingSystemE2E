@@ -23,10 +23,11 @@ if not EMAIL or not PASSWORD:
     logger.error("Email or password not found in the .env file. Please set them.")
     raise ValueError("Email or password not found in the .env file. Please set them.")
 
+
 @pytest.fixture(scope="module")
 def setup_playwright():
     with sync_playwright() as p:
-        browser = p.chromium.launch(headless=False)  # Set to True for headless mode
+        browser = p.chromium.launch(headless=True)  # Set to True for headless mode
         context = browser.new_context()
         page = context.new_page()
         yield page
@@ -66,7 +67,8 @@ def test_shopping_flow(setup_playwright):
 
     for product_id in selected_products:
         # Click the "Add to Cart" button for each selected product
-        page.click(f"xpath=(//div[contains(., 'Product {product_id}')]//button[contains(text(), 'Add to Cart')])[{product_id}]")
+        page.click(
+            f"xpath=(//div[contains(., 'Product {product_id}')]//button[contains(text(), 'Add to Cart')])[{product_id}]")
         logger.info(f"Added Product {product_id} to the cart.")
 
     # Step 3: Verify that the selected products were added to the cart
