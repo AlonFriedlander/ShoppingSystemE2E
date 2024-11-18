@@ -30,8 +30,8 @@ jobs:
           npx playwright install
 
       # Step 4: Run the test script
-      - name: Run e2e tests
+      - name: Run  all e2e tests
         env:
           EMAIL: ${{ secrets.EMAIL }}
           PASSWORD: ${{ secrets.PASSWORD }}
-        run: pytest tests/test_shopping_flow.py
+        run: pytest tests/

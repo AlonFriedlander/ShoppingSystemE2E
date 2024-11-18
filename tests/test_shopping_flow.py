@@ -5,7 +5,6 @@ import os
 import random
 from dotenv import load_dotenv, find_dotenv
 
-
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from utils.logger_setup import logger
 
@@ -28,14 +27,14 @@ if not EMAIL or not PASSWORD:
 def setup_playwright():
     headless_mode = os.getenv("HEADLESS", "True").lower() == "true"
     with sync_playwright() as p:
-        browser = p.chromium.launch(headless=headless_mode)
+        browser = p.chromium.launch(channel="chrome", headless=headless_mode)
         context = browser.new_context()
         page = context.new_page()
         yield page
         browser.close()
 
 
-def test_shopping_flow(setup_playwright):
+def test_login(setup_playwright):
     page = setup_playwright
 
     # Step 1: Navigate to the website and click on the "Sign In" tab
@@ -57,30 +56,32 @@ def test_shopping_flow(setup_playwright):
     # Verify we are on a new page after login
     assert page.url != "https://main.d2t1pk7fjag8u6.amplifyapp.com", "Login failed."
 
-    # Step 2: Randomly select 2 different products to add to the cart
-    selected_products = random.sample(range(1, 6), 2)  # Randomly select 2 unique product numbers
+
+def test_add_products_to_cart(setup_playwright):
+    page = setup_playwright
+    selected_products = random.sample(range(1, 6), 2)
 
     for product_id in selected_products:
         page.click(
             f"xpath=(//div[contains(., 'Product {product_id}')]//button[contains(text(), 'Add to Cart')])[{product_id}]")
         logger.info(f"Added Product {product_id} to the cart.")
 
-    # Step 3: Verify that the selected products were added to the cart
     page.click("text=Shopping Cart")
     for product_id in selected_products:
         assert page.is_visible(f"text=Product {product_id}"), f"Product {product_id} is not visible in the cart"
     logger.info("Selected products are visible in the cart.")
 
-    # Step 4: Proceed to checkout
+
+def test_checkout_flow(setup_playwright):
+    page = setup_playwright
     page.click("text=Checkout")
-
     shipping_input = page.wait_for_selector("text=Shipping Address: >> input")
-
-    # Fill in the shipping address
     shipping_input.fill("dizengoff center")
     logger.info("Shipping address filled.")
 
-    # Step 5: Complete checkout and capture order ID
+
+def test_complete_checkout(setup_playwright):
+    page = setup_playwright
     captured_message = None
 
     def handle_dialog(dialog):
@@ -88,21 +89,22 @@ def test_shopping_flow(setup_playwright):
         captured_message = dialog.message
         dialog.accept()
 
-    # Set up the dialog event listener
     page.once("dialog", handle_dialog)
     page.click("text=Complete Checkout")
-    page.wait_for_timeout(3000)  # Wait to ensure the dialog is captured
+    page.wait_for_timeout(3000)
 
-    # Check if the alert message was captured correctly
     if captured_message:
         logger.info(f"Captured alert message: {captured_message}")
+        global order_id
         order_id = captured_message.split(": ")[1].strip()
         logger.info(f"Captured order ID: {order_id}")
     else:
         logger.error("No alert message captured")
         raise Exception("No alert message captured")
 
-    # Step 6: Verify order on the Orders page
+
+def test_verify_order(setup_playwright):
+    page = setup_playwright
     page.click("text=Orders")
     page.wait_for_timeout(2000)
     assert page.is_visible(f"text=Order {order_id}"), "New order not found in orders list"

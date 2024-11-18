@@ -59,15 +59,16 @@ Create a .env file in the project root with the following content(after you regi
 ```bash
 EMAIL=your_email@example.com
 PASSWORD=your_password
+HEADLESS=False # Set to True for headless mode in CI/CD
 ```
 ### 6. Run the Test Suite:
 ```bash
-pytest tests/test_shopping_flow.py
+pytest tests/
 ```
 
 ### 7. Run the Test Suite with console logging:
 ```bash
-pytest -s tests/test_shopping_flow.py
+pytest -s tests/
 ```
 
 ## Logs
